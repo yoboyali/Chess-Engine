@@ -7,7 +7,11 @@ link_directories(${RAYLIB_DIR}/src)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(Chess_Engine main.cpp)
+add_executable(Chess_Engine
+        src/main.cpp
+        src/renderer.cpp
+        src/renderer.h
+        src/Includes.h)
 
 target_link_libraries(${PROJECT_NAME}
         raylib

@@ -20,6 +20,7 @@ renderer::~renderer()
 
 void renderer::LoadTextures()
 {
+    //Loads all the needed textures
     BoardTex = LoadTexture("Texture/board.png");
     bPiecesTex = LoadTexture("Texture/bPieces.png");
     wPiecesTex = LoadTexture("Texture/wPieces.png");
@@ -29,13 +30,14 @@ void renderer::LoadTextures()
 
 void renderer::ResetBoard()
 {
+
     Board = {
         Black_Rook, Black_Horse, Black_Bishop, Black_Queen,Black_King, Black_Bishop, Black_Horse, Black_Rook,
         Black_Pawn,Black_Pawn,Black_Pawn,Black_Pawn,Black_Pawn,Black_Pawn,Black_Pawn,Black_Pawn,
-        6,6,6,6,6,6,6,6,
-        6,6,6,6,6,6,6,6,
-        6,6,6,6,6,6,6,6,
-        6,6,6,6,6,6,6,6,
+        Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
+        Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
+        Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
+        Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
         White_Pawn,White_Pawn,White_Pawn,White_Pawn,White_Pawn,White_Pawn,White_Pawn,White_Pawn,
         White_Rook, White_Horse, White_Bishop, White_Queen,White_King, White_Bishop, White_Horse, White_Rook
     };
@@ -45,10 +47,12 @@ void renderer::DrawPieces()
 {
     float posy ;
     float posx ;
-    float SpriteOff ;
+    float SpriteOff;
+    float SelectedPieceOffset = 0;
 
     int CurrPiece;
     Texture CurrTexture = wPiecesTex;
+    Texture SelectedPieceTex = wPiecesTex;
 
     for (int y = 0 ; y < 8 ; y++) {
         for (int x = 0; x < 8 ; x++){
@@ -59,47 +63,67 @@ void renderer::DrawPieces()
             CurrPiece = Board[y][x];
             CurrTexture = wPiecesTex;
 
-            if (CurrPiece == 6) {
+            if (CurrPiece == Empty) {
                 continue;
             }
+            //Check if the current piece is Black
+            // Black pieces have a 1 in front to declare that they are black so subtracting 10 from them
+            // Wont make them below 0
             if (CurrPiece - 10 >= 0) {
                 CurrTexture = bPiecesTex;
                 SpriteOff = PieceSize * (CurrPiece - 10);
 
             }
+            //White piecees have a 0 in front to declare that they are white so subtracting 10 from them
+            // Will make them below 0
             if (CurrPiece - 10 <0) {
                 CurrTexture = wPiecesTex;
                 SpriteOff = PieceSize * (CurrPiece);
 
             }
-
+            //Check whether the loop is on a selected piece
+            //if so we save the offset and texture to render later so that selected pieces are always on top
             if (CurrPiece == SelectedPiece && FirstPosition.x == x && FirstPosition.y == y) {
-                posx = GetMouseX();
-                posy = GetMouseY();
-                DrawTexturePro(CurrTexture,{SpriteOff, 0, PieceSize, PieceSize},{posx -35 , posy -35 , PieceSize, PieceSize},{0, 0},0.0f,WHITE);
+                SelectedPieceOffset = SpriteOff;
+                SelectedPieceTex = CurrTexture;
+                continue;
+
             }
 
-            else {
-                DrawTexturePro(CurrTexture,{SpriteOff, 0, PieceSize, PieceSize},{Offset + posx + 5 , Offset + posy + 5, PieceSize, PieceSize},{0, 0},0.0f,WHITE);
-            }
-
-
+            DrawTexturePro(CurrTexture,{SpriteOff, 0, PieceSize, PieceSize},{Offset + posx + 5 , Offset + posy + 5, PieceSize, PieceSize},{0, 0},0.0f,WHITE);
         }
 
+    }
+    if (PieceSelected) {
+        posx = GetMouseX();
+        posy = GetMouseY();
+        DrawTexturePro(SelectedPieceTex,{SelectedPieceOffset, 0, PieceSize, PieceSize},{posx -35 , posy -35 , PieceSize, PieceSize},{0, 0},0.0f,WHITE);
     }
 
 }
 
 void renderer::DrawCursor(float x , float y)
 {
+    //return if out of bounds
     if (x < 0 || y < 0) {
         return;
     }
-    DrawTexturePro(CursorTex , {0 , 0 , 16 , 16} ,{x , y , 16 , 16}, {0 , 0} , 0.0f , WHITE);
+    DrawTexturePro(CursorTex , {0 , 0 , 32 , 32} ,{x , y , 32 , 32}, {0 , 0} , 0.0f , WHITE);
 }
+int renderer::getPieceColor(Vector2 pos)
+{
+    if (Board[pos.y][pos.x] - 10 < 0) {
+        return White;
+    }
+    if (Board[pos.y][pos.x] - 10 >= 0) {
+        return Black;
+    }
 
+}
 void renderer::UpdateBoard()
 {
+    MoveIntegrity Integrity;
+
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !PieceSelected) {
         PieceSelected = true;
         FirstPosition.x = (GetMouseX() - Offset) / TileSize;
@@ -122,10 +146,15 @@ void renderer::UpdateBoard()
         if (FirstPosition.x == SecondPosition.x && FirstPosition.y == SecondPosition.y) {
             return;
         }
-        Board[SecondPosition.y][SecondPosition.x] =
-            Board[FirstPosition.y][FirstPosition.x];
 
-        Board[FirstPosition.y][FirstPosition.x] = 6;;
+       bool MoveAccepted = Integrity.CheckMove( Board[FirstPosition.y][FirstPosition.x],getPieceColor(FirstPosition), FirstPosition , SecondPosition , Board);
+
+        if (MoveAccepted) {
+            Board[SecondPosition.y][SecondPosition.x] =
+    Board[FirstPosition.y][FirstPosition.x];
+            Board[FirstPosition.y][FirstPosition.x] = 6;;
+        }
+
 
 
 
@@ -137,7 +166,7 @@ void renderer::render()
 {
     DrawTexture(BoardTex , 0 , 0 , WHITE);
     DrawPieces();
-  //  DrawCursor(GetMouseX() , GetMouseY());
+    DrawCursor(GetMouseX() , GetMouseY());
     UpdateBoard();
 }
 

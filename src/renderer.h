@@ -5,7 +5,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 #include "Includes.h"
-
+#include "MoveIntegrity.h"
 
 class renderer {
 
@@ -24,6 +24,7 @@ class renderer {
 
     int numClicks = 1;
     int SelectedPiece;
+
 
     enum pieces
     {
@@ -51,6 +52,7 @@ class renderer {
     void DrawPieces();
     void DrawCursor(float x , float y);
     void UpdateBoard();
+    int getPieceColor(Vector2 pos);
 
 public:
     renderer();

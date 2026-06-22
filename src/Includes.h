@@ -10,6 +10,10 @@
 #define PieceSize 80
 #define TileSize 80
 #define Offset 30
+#define Empty 6
+#define White 1
+#define Black -1
+
 
 #include <iostream>
 #include "raylib.h"

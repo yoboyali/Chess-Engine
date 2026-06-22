@@ -43,35 +43,51 @@ void renderer::ResetBoard()
 
 void renderer::DrawPieces()
 {
+    float posy ;
+    float posx ;
+    float SpriteOff ;
+
+    int CurrPiece;
+    Texture CurrTexture = wPiecesTex;
 
     for (int y = 0 ; y < 8 ; y++) {
         for (int x = 0; x < 8 ; x++){
-            float posy = y * TileSize;
-            float posx = x * TileSize;
-            Texture CurrTexture = wPiecesTex;
-            float SpriteOff = 0;
+            posy = y * TileSize;
+            posx = x * TileSize;
+            SpriteOff = 0;
 
-            if (Board[y][x] == 6) {
+            CurrPiece = Board[y][x];
+            CurrTexture = wPiecesTex;
+
+            if (CurrPiece == 6) {
                 continue;
             }
-            if (Board[y][x] - 10 >= 0) {
+            if (CurrPiece - 10 >= 0) {
                 CurrTexture = bPiecesTex;
-                SpriteOff = PieceSize * (Board[y][x] - 10);
+                SpriteOff = PieceSize * (CurrPiece - 10);
 
             }
-            if (Board[y][x] - 10 <0) {
+            if (CurrPiece - 10 <0) {
                 CurrTexture = wPiecesTex;
-                SpriteOff = PieceSize * (Board[y][x]);
+                SpriteOff = PieceSize * (CurrPiece);
 
             }
 
+            if (CurrPiece == SelectedPiece && FirstPosition.x == x && FirstPosition.y == y) {
+                posx = GetMouseX();
+                posy = GetMouseY();
+                DrawTexturePro(CurrTexture,{SpriteOff, 0, PieceSize, PieceSize},{posx -35 , posy -35 , PieceSize, PieceSize},{0, 0},0.0f,WHITE);
+            }
 
-            DrawTexturePro(CurrTexture,{SpriteOff, 0, PieceSize, PieceSize},{Offset + posx + 5 , Offset + posy + 5, PieceSize, PieceSize},{0, 0},0.0f,WHITE);
+            else {
+                DrawTexturePro(CurrTexture,{SpriteOff, 0, PieceSize, PieceSize},{Offset + posx + 5 , Offset + posy + 5, PieceSize, PieceSize},{0, 0},0.0f,WHITE);
+            }
 
 
         }
 
     }
+
 }
 
 void renderer::DrawCursor(float x , float y)
@@ -88,11 +104,13 @@ void renderer::UpdateBoard()
         PieceSelected = true;
         FirstPosition.x = (GetMouseX() - Offset) / TileSize;
         FirstPosition.y = (GetMouseY() -Offset) / TileSize;
+        SelectedPiece =  Board[FirstPosition.y][FirstPosition.x];
         // std::cout<<"First Position"<<std::endl;
         //std::cout<<"X: "<<FirstPosition.x + 1<<"Y: "<<FirstPosition.y + 1<<std::endl;
     }
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && PieceSelected){
         PieceSelected = false;
+        SelectedPiece = 6;
         SecondPosition.x =(GetMouseX() - Offset) / TileSize;
         SecondPosition.y =(GetMouseY() - Offset) / TileSize;
         //std::cout<<"Second Position"<<std::endl;
@@ -119,7 +137,7 @@ void renderer::render()
 {
     DrawTexture(BoardTex , 0 , 0 , WHITE);
     DrawPieces();
-    DrawCursor(GetMouseX() , GetMouseY());
+  //  DrawCursor(GetMouseX() , GetMouseY());
     UpdateBoard();
 }
 

@@ -23,6 +23,7 @@ class renderer {
     Vector2 SecondPosition;
 
     int numClicks = 1;
+    int SelectedPiece;
 
     enum pieces
     {

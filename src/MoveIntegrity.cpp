@@ -1,5 +1,10 @@
 #include "MoveIntegrity.h"
 
+
+bool operator==(Vector2 a , Vector2 b)
+{
+    return (a.x == b.x && a.y == b.y);
+}
 void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
 {
     Board[(int)SecondPos.y * 8 + (int)SecondPos.x] = Board[(int)FirstPos.y * 8 + (int)FirstPos.x];
@@ -7,35 +12,37 @@ void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
     Board[(int)FirstPos.y * 8 + (int)FirstPos.x].color = 0;
 }
 
-bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
+bool MoveIntegrity::Check_Pawn(int color ,Vector2 FirstPos, Vector2 SecondPos)
 {
-    int OriginalTile = (int)FirstPos.y * 8 + (int)FirstPos.y;
-    int DestinationTile = (int)SecondPos.y * 8 + (int)SecondPos.y;
-
+    // Todo enn passant + promotion
+    int OriginalTile = (int)FirstPos.y * 8 + (int)FirstPos.x;
+    int DestinationTile = (int)SecondPos.y * 8 + (int)SecondPos.x;
+    int fx = (int)FirstPos.x;
+    int fy = (int)FirstPos.y;
 
     bool answer = false;
-    int color = 1;
+
+    auto pieceAt = [&](int x, int y) {
+        return Board[y * 8 + x].id;
+    };
 
     std::array<Vector2 , 4> AllowedMoves;
-    AllowedMoves[0] = {FirstPos.x , FirstPos.y + 1};
-    AllowedMoves[1] = {FirstPos.x -1 , FirstPos.y + 1};
-    AllowedMoves[2] = {FirstPos.x +1 , FirstPos.y + 1};
-    AllowedMoves[3] = {FirstPos.x , FirstPos.y + 2};
+    AllowedMoves[0] = {FirstPos.x , FirstPos.y - 1 * color};
+    AllowedMoves[1] = {FirstPos.x -1 , FirstPos.y - 1 * color};
+    AllowedMoves[2] = {FirstPos.x +1 , FirstPos.y - 1 * color};
+    std::cout<<"Calc: "<<FirstPos.y - 2 * color<<std::endl;
+    AllowedMoves[3] = {FirstPos.x , FirstPos.y - 2 * color};
 
-    if (OriginalTile != Board[OriginalTile].startingTile) {AllowedMoves[3] = {0,0};}
+    if (OriginalTile != Board[OriginalTile].startingTile || Board[DestinationTile].id != 0) {AllowedMoves[3] = {-1,-1};}
+    if (pieceAt(fx, fy - color) != 0)     AllowedMoves[0] = {-1, -1};
+    if (pieceAt(fx - 1, fy - color) == 0) AllowedMoves[1] = {-1, -1};
+    if (pieceAt(fx + 1, fy - color) == 0) AllowedMoves[2] = {-1, -1};
 
-    if (Board[DestinationTile].id != 0) {
-        for (int i = 0; i < AllowedMoves.size(); i++) {
-            if (DestinationTile == AllowedMoves[i].y * 8 + AllowedMoves[i].x) {
-                AllowedMoves[i] = {0,0};
-            }
-        }
+    std::cout<<"Second pos X: "<<SecondPos.x<<" Second pos y: "<<SecondPos.y<<std::endl;
+    for (int i = 0 ; i < AllowedMoves.size() ; i++) {
+        std::cout<<"Allowed pos X: "<<AllowedMoves[i].x<<" Allowed pos Y: "<<AllowedMoves[i].y<<std::endl;
+        if (AllowedMoves[i] == SecondPos) {answer = true;}
     }
-
-    
-
-
-
 
     return answer;
 }
@@ -52,10 +59,11 @@ void MoveIntegrity::InitializeBoard()
         // Black pawns (row 1)
         Board[1 * 8 + col].id    = 10 + 6;
         Board[1 * 8 + col].color = Black;
+        Board[1 * 8 + col].startingTile = 1 * 8 + col;
 
         // Empty rows 2-5
         for (int row = 2; row <= 5; row++) {
-            Board[row * 8 + col].id    = Empty;
+            Board[row  * 8 + col].id    = Empty;
             Board[row * 8 + col].color = 0;
         }
 
@@ -82,7 +90,10 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos)
 
     switch (Board[(int)FirstPos.y * 8 + (int)FirstPos.x].id) {
         case 6:
-            Answer = Check_Pawn(FirstPos , SecondPos);
+            Answer = Check_Pawn(White ,FirstPos , SecondPos);
+            break;
+        case 16:
+            Answer = Check_Pawn(Black ,FirstPos , SecondPos);
             break;
         default:
             break;

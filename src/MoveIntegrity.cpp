@@ -1,14 +1,43 @@
 #include "MoveIntegrity.h"
 
-bool MoveIntegrity::Check_Pawn(int color, Vector2 FirstPos, Vector2 SecondPos)
+void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
 {
-    int steps = 1;
-    if (FirstPos.y == 1 || FirstPos.y == 6) { steps = 2; }
+    Board[(int)SecondPos.y * 8 + (int)SecondPos.x] = Board[(int)FirstPos.y * 8 + (int)FirstPos.x];
+    Board[(int)FirstPos.y * 8 + (int)FirstPos.x].id = Empty;
+    Board[(int)FirstPos.y * 8 + (int)FirstPos.x].color = 0;
+}
 
-    if (FirstPos.y - SecondPos.y == steps * color || FirstPos.y - SecondPos.y == 1 * color) {
-        return true;
+bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
+{
+    int OriginalTile = (int)FirstPos.y * 8 + (int)FirstPos.y;
+    int DestinationTile = (int)SecondPos.y * 8 + (int)SecondPos.y;
+
+
+    bool answer = false;
+    int color = 1;
+
+    std::array<Vector2 , 4> AllowedMoves;
+    AllowedMoves[0] = {FirstPos.x , FirstPos.y + 1};
+    AllowedMoves[1] = {FirstPos.x -1 , FirstPos.y + 1};
+    AllowedMoves[2] = {FirstPos.x +1 , FirstPos.y + 1};
+    AllowedMoves[3] = {FirstPos.x , FirstPos.y + 2};
+
+    if (OriginalTile != Board[OriginalTile].startingTile) {AllowedMoves[3] = {0,0};}
+
+    if (Board[DestinationTile].id != 0) {
+        for (int i = 0; i < AllowedMoves.size(); i++) {
+            if (DestinationTile == AllowedMoves[i].y * 8 + AllowedMoves[i].x) {
+                AllowedMoves[i] = {0,0};
+            }
+        }
     }
-    return false;
+
+    
+
+
+
+
+    return answer;
 }
 
 void MoveIntegrity::InitializeBoard()
@@ -33,6 +62,7 @@ void MoveIntegrity::InitializeBoard()
         // White pawns (row 6)
         Board[6 * 8 + col].id    = 6;
         Board[6 * 8 + col].color = White;
+        Board[6 * 8 + col].startingTile = 6 * 8 + col ;
 
         // White back rank (row 7)
         Board[7 * 8 + col].id    = backRank[col];
@@ -40,9 +70,26 @@ void MoveIntegrity::InitializeBoard()
     }
 }
 
-bool MoveIntegrity::CheckMove(int id, int color, Vector2 FirstPos, Vector2 SecondPos)
+bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos)
 {
+    bool Answer = false;
     // TODO: route to per-piece check functions (Check_Pawn, etc.)
+    if (Board[(int)FirstPos.y * 8 + (int)FirstPos.x].color == Board[(int)SecondPos.y * 8 + (int)SecondPos.x].color ) {
+        return false;
+    }
+    if (SecondPos.x < 0 || SecondPos.x > 7
+        ||SecondPos.y < 0 || SecondPos.x >7){return false;}
+
+    switch (Board[(int)FirstPos.y * 8 + (int)FirstPos.x].id) {
+        case 6:
+            Answer = Check_Pawn(FirstPos , SecondPos);
+            break;
+        default:
+            break;
+    }
+
+
+    if (Answer == true){MakeMove(FirstPos , SecondPos);}
     return Answer;
 }
 

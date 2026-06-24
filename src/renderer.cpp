@@ -95,7 +95,6 @@ void renderer::UpdateBoard()
         int x = (GetMouseX() - Offset) / TileSize;
         int y = (GetMouseY() - Offset) / TileSize;
 
-        // Empty check should just bail, not also check 0-7 since Empty==0 already is in that range
         if (BoardSnapshot[y * 8 + x] == Empty) { return; }
 
         PieceSelected    = true;
@@ -116,12 +115,7 @@ void renderer::UpdateBoard()
             return;
         }
 
-        bool MoveAccepted = Integrity.CheckMove(
-            BoardSnapshot[FirstPosition.y * 8 + FirstPosition.x],
-            0,
-            FirstPosition,
-            SecondPosition
-        );
+        bool MoveAccepted = Integrity.CheckMove(FirstPosition,SecondPosition);
 
         if (MoveAccepted) {
             BoardSnapshot[SecondPosition.y * 8 + SecondPosition.x] =

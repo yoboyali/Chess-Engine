@@ -10,7 +10,7 @@
 #define PieceSize 80
 #define TileSize 80
 #define Offset 30
-#define Empty 6
+#define Empty 0
 #define White 1
 #define Black -1
 

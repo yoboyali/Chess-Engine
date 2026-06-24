@@ -13,7 +13,10 @@ add_executable(Chess_Engine
         src/renderer.h
         src/Includes.h
         src/MoveIntegrity.cpp
-        src/MoveIntegrity.h)
+        src/MoveIntegrity.h
+        src/Piece.cpp
+        src/Piece.h
+)
 
 target_link_libraries(${PROJECT_NAME}
         raylib

@@ -1,64 +1,63 @@
-//
-// Created by Ali Hamdy on 22/06/2026.
-//
-
 #include "MoveIntegrity.h"
 
-
-int MoveIntegrity::getPieceColor(Vector2 pos , std::array<std::array<int, 8>, 8> Board)
+bool MoveIntegrity::Check_Pawn(int color, Vector2 FirstPos, Vector2 SecondPos)
 {
-    if (Board[pos.y][pos.x] == Empty) {
-        return Empty;
-    }
-    if (Board[pos.y][pos.x] - 10 < 0) {
-        return White;
-    }
-    if (Board[pos.y][pos.x] - 10 >= 0) {
-        return Black;
-    }
+    int steps = 1;
+    if (FirstPos.y == 1 || FirstPos.y == 6) { steps = 2; }
 
-
-}
-
-bool MoveIntegrity::Check_Pawn(int color , Vector2 FirstPos , Vector2 SecondPos)
-{
-    int steps =  1;
-    if (FirstPos.y == 1 ||FirstPos.x == 6){steps = 2;}
-
-    if (FirstPos.y - SecondPos.y <= steps * color && FirstPos.y - SecondPos.y <= 1 ) {
+    if (FirstPos.y - SecondPos.y == steps * color || FirstPos.y - SecondPos.y == 1 * color) {
         return true;
     }
-
     return false;
 }
 
-bool MoveIntegrity::CheckMove(int id, int color, Vector2 FirstPos, Vector2 SecondPos,std::array<std::array<int, 8>, 8> Board)
+void MoveIntegrity::InitializeBoard()
 {
-    int TargetColor = getPieceColor(SecondPos , Board);
-    if (color == TargetColor ) {
-        Answer = false;
+    const int backRank[8] = { 2, 1, 3, 4, 5, 3, 1, 2};
+
+    for (int col = 0; col < 8; col++) {
+        // Black back rank (row 0)
+        Board[0 * 8 + col].id    = 10 + backRank[col];
+        Board[0 * 8 + col].color = Black;
+
+        // Black pawns (row 1)
+        Board[1 * 8 + col].id    = 10 + 6;
+        Board[1 * 8 + col].color = Black;
+
+        // Empty rows 2-5
+        for (int row = 2; row <= 5; row++) {
+            Board[row * 8 + col].id    = Empty;
+            Board[row * 8 + col].color = 0;
+        }
+
+        // White pawns (row 6)
+        Board[6 * 8 + col].id    = 6;
+        Board[6 * 8 + col].color = White;
+
+        // White back rank (row 7)
+        Board[7 * 8 + col].id    = backRank[col];
+        Board[7 * 8 + col].color = White;
     }
-    if (SecondPos.x < 0 || SecondPos.y < 0 || SecondPos.x > 7 || SecondPos.y > 7 ) {
-        Answer = false;
-    }
+}
 
-    switch (id) {
-        case White_Pawn:
-        case Black_Pawn:
-            Answer = Check_Pawn(color , FirstPos , SecondPos);
-            break;
-
-    }
-
-
-
-
+bool MoveIntegrity::CheckMove(int id, int color, Vector2 FirstPos, Vector2 SecondPos)
+{
+    // TODO: route to per-piece check functions (Check_Pawn, etc.)
     return Answer;
+}
 
+std::array<int, 64> MoveIntegrity::GetBoard()
+{
+    std::array<int, 64> snapshot;
+    for (int i = 0; i < 64; i++) {
+        snapshot[i] = Board[i].id;
+    }
+    return snapshot;
 }
 
 MoveIntegrity::MoveIntegrity()
 {
+    InitializeBoard();
 }
 
 MoveIntegrity::~MoveIntegrity()

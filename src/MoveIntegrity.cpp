@@ -154,8 +154,7 @@ bool MoveIntegrity::Check_Queen(Vector2 FirstPos, Vector2 SecondPos)
     bool stopUpCheck = false, stopDownCheck = false;
     bool stopLeftCheck = false, stopRightCheck = false;
 
-    for (int Index = 1; Index < 16; Index++) {
-
+    for (int Index = 1; Index < 8; Index++) {
         //  UP
         if (!stopUpCheck) {
             int UpTile = GetTile({FirstPos.x, (float)(column + Index)});
@@ -191,6 +190,8 @@ bool MoveIntegrity::Check_Queen(Vector2 FirstPos, Vector2 SecondPos)
                 if (Board[RightTile].id != Empty) stopRightCheck = true;
             } else stopRightCheck = true;
         }
+    }
+    for (int Index = 1; Index < 8; Index++) {
         //  Top Left
         if (!stopTopLeft) {
             int TopLeft = GetTile({(float)row - Index, (float)(column + Index)});
@@ -227,8 +228,50 @@ bool MoveIntegrity::Check_Queen(Vector2 FirstPos, Vector2 SecondPos)
             } else stopBottomRight = true;
         }
     }
+
+
     for (int tile : LegalMoves) {
         if (tile == DestinationTile) return true;
+    }
+    return false;
+}
+
+bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckAttacks)
+{
+    int DistanceX = abs(FirstPos.x - SecondPos.x);
+    int DistanceY = abs(FirstPos.y - SecondPos.y);
+    int Tile = GetTile(FirstPos);
+    int color = Board[Tile].color;
+    if (DistanceX <= 1 && DistanceY <= 1) {
+        // checks whether the tile the king is trying to go to is a dangerous square
+        // CheckAttacks bool so that we don't get into an infinite recursion loop when checking opponent king
+        if (CheckAttacks == true){return !IsUnderAttack(color, SecondPos);}
+        return true;
+    }
+    return false;
+}
+
+bool MoveIntegrity::IsUnderAttack(int color, Vector2 Pos)
+{
+    int OpponentColor = color * -1;
+    int OpponentPawn = color = Black ? Black_Pawn : White_Pawn;
+    std::cout<<"FrontLeft"<<std::endl;
+    for (int i = 0; i < 64; i++) {
+        //loop through the whole board and recall CheckMove with bos of opponent piece and position of Friendly king
+        if (Board[i].color != OpponentColor) continue;
+        if (Board[i].id == OpponentPawn) {
+            //Special condition for pawns as Checkmove() Returns Forward moves as true
+            Vector2 FrontLeft = { (float)(i % 8), (float)(i / 8) };
+            Vector2 FrontRight = { FrontLeft.x + 1 , FrontLeft.y + 1 };
+            FrontLeft.x = FrontLeft.x - 1 , FrontLeft.y = FrontLeft.y + 1;
+
+            if (FrontLeft == Pos || FrontRight == Pos) return true;
+            continue;
+        }
+        Vector2 CurrentTile = { (float)(i % 8), (float)(i / 8) };
+        if (CheckMove(CurrentTile, Pos, false)) {
+            return true;
+        }
     }
     return false;
 }
@@ -296,19 +339,20 @@ void MoveIntegrity::InitializeBoard()
     }
 }
 
-bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos)
+bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
 {
+    //todo pins and checks , those freaking pawns
     bool Answer = false;
     int OriginalTile = GetTile(FirstPos);
     int DestinationTile = GetTile(SecondPos);
-    // TODO: route to per-piece check functions (Check_Pawn, etc.)
 
     //Check basic cases like friendly fire / invalid tile
     if (Board[OriginalTile].color == Board[DestinationTile].color ) {
         return false;
     }
     if (SecondPos.x < 0 || SecondPos.x > 7
-        ||SecondPos.y < 0 || SecondPos.x >7){return false;}
+        ||SecondPos.y < 0 || SecondPos.y >7){return false;}
+
 
     switch (Board[OriginalTile].id) {
 
@@ -328,6 +372,10 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos)
         case Black_Queen:
             Answer = Check_Queen(FirstPos , SecondPos);
             break;
+        case White_King:
+        case Black_King:
+            Answer = Check_King(FirstPos , SecondPos , make);
+            break;
         case White_Pawn:
         case Black_Pawn:
             Answer = Check_Pawn(FirstPos , SecondPos);
@@ -337,7 +385,7 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos)
     }
 
 
-    if (Answer == true){MakeMove(FirstPos , SecondPos);}
+    if (Answer == true && make == true){MakeMove(FirstPos , SecondPos);}
     return Answer;
 }
 

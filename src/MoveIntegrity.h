@@ -13,6 +13,8 @@ class MoveIntegrity {
     bool Check_Rook(Vector2 FirstPos, Vector2 SecondPos);
     bool Check_Knight(Vector2 FirstPos , Vector2 SecondPos);
     bool Check_Queen(Vector2 FirstPos , Vector2 SecondPos);
+    bool Check_King(Vector2 FirstPos , Vector2 SecondPos , bool CheckAttacks);
+    bool IsUnderAttack(int color , Vector2 Pos);
     bool Check_Pawn(Vector2 FirstPos, Vector2 SecondPos);
     void InitializeBoard();
 
@@ -38,7 +40,7 @@ class MoveIntegrity {
     };
 
 public:
-    bool CheckMove(Vector2 FirstPos, Vector2 SecondPos);
+    bool CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make);
     std::array<int, 64> GetBoard();
 
     MoveIntegrity();

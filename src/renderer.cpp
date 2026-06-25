@@ -115,7 +115,7 @@ void renderer::UpdateBoard()
             return;
         }
 
-        bool MoveAccepted = Integrity.CheckMove(FirstPosition,SecondPosition);
+        bool MoveAccepted = Integrity.CheckMove(FirstPosition,SecondPosition , true);
 
         if (MoveAccepted) {
             BoardSnapshot[SecondPosition.y * 8 + SecondPosition.x] =

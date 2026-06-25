@@ -12,6 +12,7 @@ class MoveIntegrity {
     bool Check_Bishop(Vector2 FirstPos , Vector2 SecondPos);
     bool Check_Rook(Vector2 FirstPos, Vector2 SecondPos);
     bool Check_Knight(Vector2 FirstPos , Vector2 SecondPos);
+    bool Check_Queen(Vector2 FirstPos , Vector2 SecondPos);
     bool Check_Pawn(Vector2 FirstPos, Vector2 SecondPos);
     void InitializeBoard();
 

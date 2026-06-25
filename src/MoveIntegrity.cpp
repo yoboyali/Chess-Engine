@@ -141,6 +141,98 @@ bool MoveIntegrity::Check_Knight(Vector2 FirstPos, Vector2 SecondPos)
     return false;
 }
 
+bool MoveIntegrity::Check_Queen(Vector2 FirstPos, Vector2 SecondPos)
+{
+
+    int DestinationTile = GetTile(SecondPos);
+    std::vector<int> LegalMoves = {};
+
+    int row = FirstPos.x;
+    int column = FirstPos.y;
+    bool stopTopLeft = false, stopTopRight = false;
+    bool stopBottomLeft = false, stopBottomRight = false;
+    bool stopUpCheck = false, stopDownCheck = false;
+    bool stopLeftCheck = false, stopRightCheck = false;
+
+    for (int Index = 1; Index < 16; Index++) {
+
+        //  UP
+        if (!stopUpCheck) {
+            int UpTile = GetTile({FirstPos.x, (float)(column + Index)});
+            if (UpTile != -1) {
+                LegalMoves.push_back(UpTile);
+                if (Board[UpTile].id != Empty) stopUpCheck = true;
+            } else stopUpCheck = true;
+        }
+
+        //  DOWN
+        if (!stopDownCheck) {
+            int DownTile = GetTile({FirstPos.x, (float)(column - Index)});
+            if (DownTile != -1) {
+                LegalMoves.push_back(DownTile);
+                if (Board[DownTile].id != Empty) stopDownCheck = true;
+            } else stopDownCheck = true;
+        }
+
+        //  LEFT
+        if (!stopLeftCheck) {
+            int LeftTile = GetTile({(float)(row - Index), FirstPos.y});
+            if (LeftTile != -1) {
+                LegalMoves.push_back(LeftTile);
+                if (Board[LeftTile].id != Empty) stopLeftCheck = true;
+            } else stopLeftCheck = true;
+        }
+
+        //  RIGHT
+        if (!stopRightCheck) {
+            int RightTile = GetTile({(float)(row + Index), FirstPos.y});
+            if (RightTile != -1) {
+                LegalMoves.push_back(RightTile);
+                if (Board[RightTile].id != Empty) stopRightCheck = true;
+            } else stopRightCheck = true;
+        }
+        //  Top Left
+        if (!stopTopLeft) {
+            int TopLeft = GetTile({(float)row - Index, (float)(column + Index)});
+            if (TopLeft != -1) {
+                LegalMoves.push_back(TopLeft);
+                if (Board[TopLeft].id != Empty) stopTopLeft = true;
+            } else stopTopLeft = true;
+        }
+
+        //  Top Right
+        if (!stopTopRight) {
+            int TopRight = GetTile({(float)row + Index, (float)(column + Index)});
+            if (TopRight != -1) {
+                LegalMoves.push_back(TopRight);
+                if (Board[TopRight].id != Empty) stopTopRight = true;
+            } else stopTopRight = true;
+        }
+
+        //  Bottom Left
+        if (!stopBottomLeft) {
+            int BottomLeft = GetTile({(float)(row - Index), (float)column - Index});
+            if (BottomLeft != -1) {
+                LegalMoves.push_back(BottomLeft);
+                if (Board[BottomLeft].id != Empty) stopBottomLeft = true;
+            } else stopBottomLeft = true;
+        }
+
+        //  Bottom Right
+        if (!stopBottomRight) {
+            int BottomRight = GetTile({(float)(row + Index), (float)column - Index});
+            if (BottomRight != -1) {
+                LegalMoves.push_back(BottomRight);
+                if (Board[BottomRight].id != Empty) stopBottomRight = true;
+            } else stopBottomRight = true;
+        }
+    }
+    for (int tile : LegalMoves) {
+        if (tile == DestinationTile) return true;
+    }
+    return false;
+}
+
 bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
 {
     // Todo enn passant + promotion
@@ -231,6 +323,10 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos)
         case White_Bishop:
         case Black_Bishop:
             Answer = Check_Bishop(FirstPos , SecondPos);
+            break;
+        case White_Queen:
+        case Black_Queen:
+            Answer = Check_Queen(FirstPos , SecondPos);
             break;
         case White_Pawn:
         case Black_Pawn:

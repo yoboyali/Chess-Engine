@@ -7,9 +7,10 @@ class MoveIntegrity {
 
 
     Piece Board[64];
-    int getPieceColor(Vector2 pos);
+    int GetTile(Vector2 Pos);
     void MakeMove(Vector2 FirstPos , Vector2 SecondPos);
-    bool Check_Pawn(int color ,Vector2 FirstPos, Vector2 SecondPos);
+    bool Check_Rook(Vector2 FirstPos, Vector2 SecondPos);
+    bool Check_Pawn(Vector2 FirstPos, Vector2 SecondPos);
     void InitializeBoard();
 
 

@@ -5,20 +5,64 @@ bool operator==(Vector2 a , Vector2 b)
 {
     return (a.x == b.x && a.y == b.y);
 }
-void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
+
+int MoveIntegrity::GetTile(Vector2 Pos)
 {
-    Board[(int)SecondPos.y * 8 + (int)SecondPos.x] = Board[(int)FirstPos.y * 8 + (int)FirstPos.x];
-    Board[(int)FirstPos.y * 8 + (int)FirstPos.x].id = Empty;
-    Board[(int)FirstPos.y * 8 + (int)FirstPos.x].color = 0;
+    return Pos.y * 8 + Pos.x;
 }
 
-bool MoveIntegrity::Check_Pawn(int color ,Vector2 FirstPos, Vector2 SecondPos)
+void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
+{
+    int DesintationTile = GetTile(SecondPos);
+    int OriginalTile = GetTile(FirstPos);
+
+    Board[DesintationTile] = Board[OriginalTile];
+    Board[OriginalTile].id = Empty;
+    Board[OriginalTile].color = 0;
+}
+
+bool MoveIntegrity::Check_Rook(Vector2 FirstPos, Vector2 SecondPos)
+{
+    int Tile = GetTile(FirstPos);
+    int color = Board[Tile].color;
+    bool Answer = false;
+    std::array<Vector2 , 14 >LegalMoves = {};
+
+    int Index = 0;
+    for (int column = 0 ; column < 8 ; column++) {
+        int CurentTile = GetTile({(float)column , FirstPos.x});
+
+        if (CurentTile == Tile){continue;}
+            LegalMoves[Index] = {FirstPos.x ,(float)column};
+            Index++;
+        //if (Board[column * 8 + (int)FirstPos.x].color == Black) {break;}
+    }
+
+    /*for (int row = 0 ; row < 8 ; row++) {
+        if (FirstPos.y * 8 + row == Tile){continue;}
+            LegalMoves[Index] = {(float)row ,FirstPos.y};
+            Index++;
+        //if (Board[(int)FirstPos.y * 8 + row].id != Empty){break;}
+    }*/
+    std::cout<<"Legal moves: "<<std::endl;
+    for (int i = 0 ; i < LegalMoves.size() ; i++) {
+        std::cout<<"X: "<<LegalMoves[i].x<<" Y: "<<LegalMoves[i].y<<std::endl;
+    }
+    for (int i = 0 ; i < LegalMoves.size() ; i++) {
+        if (LegalMoves[i] == SecondPos) {Answer = true;}
+    }
+
+    return Answer;
+}
+
+bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
 {
     // Todo enn passant + promotion
-    int OriginalTile = (int)FirstPos.y * 8 + (int)FirstPos.x;
-    int DestinationTile = (int)SecondPos.y * 8 + (int)SecondPos.x;
+    int OriginalTile = GetTile(FirstPos);
+    int DestinationTile = GetTile(SecondPos);
     int fx = (int)FirstPos.x;
     int fy = (int)FirstPos.y;
+    int color = Board[OriginalTile].color;
 
     bool answer = false;
 
@@ -26,22 +70,21 @@ bool MoveIntegrity::Check_Pawn(int color ,Vector2 FirstPos, Vector2 SecondPos)
         return Board[y * 8 + x].id;
     };
 
-    std::array<Vector2 , 4> AllowedMoves;
-    AllowedMoves[0] = {FirstPos.x , FirstPos.y - 1 * color};
-    AllowedMoves[1] = {FirstPos.x -1 , FirstPos.y - 1 * color};
-    AllowedMoves[2] = {FirstPos.x +1 , FirstPos.y - 1 * color};
-    std::cout<<"Calc: "<<FirstPos.y - 2 * color<<std::endl;
-    AllowedMoves[3] = {FirstPos.x , FirstPos.y - 2 * color};
+    std::array<Vector2 , 4> LegalMoves;
+    LegalMoves[0] = {FirstPos.x , FirstPos.y - 1 * color};
+    LegalMoves[1] = {FirstPos.x -1 , FirstPos.y - 1 * color};
+    LegalMoves[2] = {FirstPos.x +1 , FirstPos.y - 1 * color};
+    LegalMoves[3] = {FirstPos.x , FirstPos.y - 2 * color};
 
-    if (OriginalTile != Board[OriginalTile].startingTile || Board[DestinationTile].id != 0) {AllowedMoves[3] = {-1,-1};}
-    if (pieceAt(fx, fy - color) != 0)     AllowedMoves[0] = {-1, -1};
-    if (pieceAt(fx - 1, fy - color) == 0) AllowedMoves[1] = {-1, -1};
-    if (pieceAt(fx + 1, fy - color) == 0) AllowedMoves[2] = {-1, -1};
+    if (OriginalTile != Board[OriginalTile].startingTile || Board[DestinationTile].id != 0) {LegalMoves[3] = {-1,-1};}
+    if (pieceAt(fx, fy - color) != 0) {LegalMoves[0] = {-1, -1};LegalMoves[3] = {-1,-1};}
+    if (pieceAt(fx - 1, fy - color) == 0) LegalMoves[1] = {-1, -1};
+    if (pieceAt(fx + 1, fy - color) == 0) LegalMoves[2] = {-1, -1};
 
-    std::cout<<"Second pos X: "<<SecondPos.x<<" Second pos y: "<<SecondPos.y<<std::endl;
-    for (int i = 0 ; i < AllowedMoves.size() ; i++) {
-        std::cout<<"Allowed pos X: "<<AllowedMoves[i].x<<" Allowed pos Y: "<<AllowedMoves[i].y<<std::endl;
-        if (AllowedMoves[i] == SecondPos) {answer = true;}
+    //std::cout<<"Second pos X: "<<SecondPos.x<<" Second pos y: "<<SecondPos.y<<std::endl;
+    for (int i = 0 ; i < LegalMoves.size() ; i++) {
+        //std::cout<<"Allowed pos X: "<<AllowedMoves[i].x<<" Allowed pos Y: "<<AllowedMoves[i].y<<std::endl;
+        if (LegalMoves[i] == SecondPos) {answer = true;}
     }
 
     return answer;
@@ -81,19 +124,26 @@ void MoveIntegrity::InitializeBoard()
 bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos)
 {
     bool Answer = false;
+    int OriginalTile = GetTile(FirstPos);
+    int DestinationTile = GetTile(SecondPos);
     // TODO: route to per-piece check functions (Check_Pawn, etc.)
-    if (Board[(int)FirstPos.y * 8 + (int)FirstPos.x].color == Board[(int)SecondPos.y * 8 + (int)SecondPos.x].color ) {
+
+    //Check basic cases like friendly fire / invalid tile
+    if (Board[OriginalTile].color == Board[DestinationTile].color ) {
         return false;
     }
     if (SecondPos.x < 0 || SecondPos.x > 7
         ||SecondPos.y < 0 || SecondPos.x >7){return false;}
 
-    switch (Board[(int)FirstPos.y * 8 + (int)FirstPos.x].id) {
-        case 6:
-            Answer = Check_Pawn(White ,FirstPos , SecondPos);
+    switch (Board[OriginalTile].id) {
+
+        case 2:
+        case 12:
+            Answer = Check_Rook(FirstPos , SecondPos);
             break;
+        case 6:
         case 16:
-            Answer = Check_Pawn(Black ,FirstPos , SecondPos);
+            Answer = Check_Pawn(FirstPos , SecondPos);
             break;
         default:
             break;

@@ -127,6 +127,20 @@ bool MoveIntegrity::Check_Rook(Vector2 FirstPos, Vector2 SecondPos)
     return false;
 }
 
+bool MoveIntegrity::Check_Knight(Vector2 FirstPos, Vector2 SecondPos)
+{
+    int DistanceX = abs(FirstPos.x - SecondPos.x);
+    int DistanceY = abs(FirstPos.y - SecondPos.y);
+
+    if ( DistanceX == 2 && DistanceY == 1||
+         DistanceX == 1 && DistanceY == 2) {
+        return true;
+    }
+
+
+    return false;
+}
+
 bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
 {
     // Todo enn passant + promotion
@@ -192,7 +206,7 @@ void MoveIntegrity::InitializeBoard()
 
 bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos)
 {
-    bool Answer = true;
+    bool Answer = false;
     int OriginalTile = GetTile(FirstPos);
     int DestinationTile = GetTile(SecondPos);
     // TODO: route to per-piece check functions (Check_Pawn, etc.)
@@ -209,6 +223,10 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos)
         case White_Rook:
         case Black_Rook:
             Answer = Check_Rook(FirstPos , SecondPos);
+            break;
+        case White_Horse:
+        case Black_Horse:
+            Answer = Check_Knight(FirstPos , SecondPos);
             break;
         case White_Bishop:
         case Black_Bishop:

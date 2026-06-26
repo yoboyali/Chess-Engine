@@ -37,6 +37,7 @@ void renderer::DrawPieces()
 
     BoardSnapshot = Integrity.GetBoard();
 
+
     for (int y = 0; y < 8; y++) {
         posy = y * TileSize;
 
@@ -81,6 +82,11 @@ void renderer::DrawPieces()
                        {posx - 35, posy - 35, PieceSize, PieceSize},
                        {0, 0}, 0.0f, WHITE);
     }
+    for (int i = 0 ; i < moves.size() ; i++) {
+        int temp = moves[i];
+        Vector2 pos = {(float)(temp % 8), (float)(temp / 8)};
+        DrawCircle(pos.x * TileSize - 35 , pos.y  * TileSize - 35, 5 , RED);
+    }
 }
 
 void renderer::DrawCursor(float x, float y)
@@ -91,11 +97,20 @@ void renderer::DrawCursor(float x, float y)
 
 void renderer::UpdateBoard()
 {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        int x = (GetMouseX() - Offset) / TileSize;
+        int y = (GetMouseY() - Offset) / TileSize;
+        int Tile = y * 8 + x;
+        if (BoardSnapshot[Tile] == 13 || BoardSnapshot[Tile] == 3) {
+            moves = Integrity.getBishopMoves();
+        }
+    }
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !PieceSelected) {
         int x = (GetMouseX() - Offset) / TileSize;
         int y = (GetMouseY() - Offset) / TileSize;
 
         if (BoardSnapshot[y * 8 + x] == Empty) { return; }
+
 
         PieceSelected    = true;
         FirstPosition.x  = x;

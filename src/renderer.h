@@ -14,6 +14,7 @@ class renderer {
     Texture CursorTex;
 
     std::array<int, 64> BoardSnapshot;
+    std::vector<int>moves;
 
     Vector2 FirstPosition;
     Vector2 SecondPosition;

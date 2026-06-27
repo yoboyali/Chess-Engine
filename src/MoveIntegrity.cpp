@@ -18,8 +18,10 @@ void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
     int OriginalTile = GetTile(FirstPos);
 
     Board[Destination] = Board[OriginalTile];
+
     Board[OriginalTile].id = Empty;
     Board[OriginalTile].color = 0;
+    Board[OriginalTile].startingTile = -1;
 }
 
 bool MoveIntegrity::Check_Bishop(Vector2 FirstPos, Vector2 SecondPos)
@@ -76,7 +78,6 @@ bool MoveIntegrity::Check_Bishop(Vector2 FirstPos, Vector2 SecondPos)
     }
     BishopMoves = LegalMoves;
 
-    std::cout<<std::endl;
     for (int tile : LegalMoves) {
         if (tile == DestinationTile) return true;
     }
@@ -100,6 +101,8 @@ bool MoveIntegrity::Check_Rook(Vector2 FirstPos, Vector2 SecondPos)
             if (UpTile != -1) {
                 LegalMoves.push_back(UpTile);
                 if (Board[UpTile].id != Empty) stopUpCheck = true;
+                if (UpTile < 0) LegalMoves.pop_back();
+
             } else stopUpCheck = true;
         }
 
@@ -109,6 +112,7 @@ bool MoveIntegrity::Check_Rook(Vector2 FirstPos, Vector2 SecondPos)
             if (DownTile != -1) {
                 LegalMoves.push_back(DownTile);
                 if (Board[DownTile].id != Empty) stopDownCheck = true;
+                if (DownTile < 0) LegalMoves.pop_back();
             } else stopDownCheck = true;
         }
 
@@ -118,6 +122,7 @@ bool MoveIntegrity::Check_Rook(Vector2 FirstPos, Vector2 SecondPos)
             if (LeftTile != -1) {
                 LegalMoves.push_back(LeftTile);
                 if (Board[LeftTile].id != Empty) stopLeftCheck = true;
+                if (LeftTile < 0) LegalMoves.pop_back();
             } else stopLeftCheck = true;
         }
 
@@ -127,6 +132,7 @@ bool MoveIntegrity::Check_Rook(Vector2 FirstPos, Vector2 SecondPos)
             if (RightTile != -1) {
                 LegalMoves.push_back(RightTile);
                 if (Board[RightTile].id != Empty) stopRightCheck = true;
+                if (RightTile < 0) LegalMoves.pop_back();
             } else stopRightCheck = true;
         }
     }
@@ -153,96 +159,10 @@ bool MoveIntegrity::Check_Knight(Vector2 FirstPos, Vector2 SecondPos)
 
 bool MoveIntegrity::Check_Queen(Vector2 FirstPos, Vector2 SecondPos)
 {
-
-    int DestinationTile = GetTile(SecondPos);
-    std::vector<int> LegalMoves = {};
-
-    int row = FirstPos.x;
-    int column = FirstPos.y;
-    bool stopTopLeft = false, stopTopRight = false;
-    bool stopBottomLeft = false, stopBottomRight = false;
-    bool stopUpCheck = false, stopDownCheck = false;
-    bool stopLeftCheck = false, stopRightCheck = false;
-
-    for (int Index = 1; Index < 8; Index++) {
-        //  UP
-        if (!stopUpCheck) {
-            int UpTile = GetTile({FirstPos.x, (float)(column + Index)});
-            if (UpTile != -1) {
-                LegalMoves.push_back(UpTile);
-                if (Board[UpTile].id != Empty) stopUpCheck = true;
-            } else stopUpCheck = true;
-        }
-
-        //  DOWN
-        if (!stopDownCheck) {
-            int DownTile = GetTile({FirstPos.x, (float)(column - Index)});
-            if (DownTile != -1) {
-                LegalMoves.push_back(DownTile);
-                if (Board[DownTile].id != Empty) stopDownCheck = true;
-            } else stopDownCheck = true;
-        }
-
-        //  LEFT
-        if (!stopLeftCheck) {
-            int LeftTile = GetTile({(float)(row - Index), FirstPos.y});
-            if (LeftTile != -1) {
-                LegalMoves.push_back(LeftTile);
-                if (Board[LeftTile].id != Empty) stopLeftCheck = true;
-            } else stopLeftCheck = true;
-        }
-
-        //  RIGHT
-        if (!stopRightCheck) {
-            int RightTile = GetTile({(float)(row + Index), FirstPos.y});
-            if (RightTile != -1) {
-                LegalMoves.push_back(RightTile);
-                if (Board[RightTile].id != Empty) stopRightCheck = true;
-            } else stopRightCheck = true;
-        }
+    if (Check_Rook(FirstPos , SecondPos) == true) {
+        return true;
     }
-    for (int Index = 1; Index < 8; Index++) {
-        //  Top Left
-        if (!stopTopLeft) {
-            int TopLeft = GetTile({(float)row - Index, (float)(column + Index)});
-            if (TopLeft != -1) {
-                LegalMoves.push_back(TopLeft);
-                if (Board[TopLeft].id != Empty) stopTopLeft = true;
-            } else stopTopLeft = true;
-        }
-
-        //  Top Right
-        if (!stopTopRight) {
-            int TopRight = GetTile({(float)row + Index, (float)(column + Index)});
-            if (TopRight != -1) {
-                LegalMoves.push_back(TopRight);
-                if (Board[TopRight].id != Empty) stopTopRight = true;
-            } else stopTopRight = true;
-        }
-
-        //  Bottom Left
-        if (!stopBottomLeft) {
-            int BottomLeft = GetTile({(float)(row - Index), (float)column - Index});
-            if (BottomLeft != -1) {
-                LegalMoves.push_back(BottomLeft);
-                if (Board[BottomLeft].id != Empty) stopBottomLeft = true;
-            } else stopBottomLeft = true;
-        }
-
-        //  Bottom Right
-        if (!stopBottomRight) {
-            int BottomRight = GetTile({(float)(row + Index), (float)column - Index});
-            if (BottomRight != -1) {
-                LegalMoves.push_back(BottomRight);
-                if (Board[BottomRight].id != Empty) stopBottomRight = true;
-            } else stopBottomRight = true;
-        }
-    }
-
-    for (int tile : LegalMoves) {
-        if (tile == DestinationTile) return true;
-    }
-    return false;
+    return Check_Bishop(FirstPos , SecondPos);
 }
 
 bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckAttacks)
@@ -251,6 +171,8 @@ bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckA
     int DistanceY = abs(FirstPos.y - SecondPos.y);
     int Tile = GetTile(FirstPos);
     int color = Board[Tile].color;
+
+   // std::cout<<Tile<<std::endl;
     if (DistanceX <= 1 && DistanceY <= 1) {
         // checks whether the tile the king is trying to go to is a dangerous square
         // CheckAttacks bool so that we don't get into an infinite recursion loop when checking opponent king
@@ -264,15 +186,19 @@ bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckA
 bool MoveIntegrity::IsUnderAttack(int color, Vector2 Pos)
 {
     int OpponentColor = color * -1;
-    int OpponentPawn = color = Black ? Black_Pawn : White_Pawn;
+    int OpponentPawn = (color == Black) ? White_Pawn : Black_Pawn;
+
+
+    std::cout<<OpponentPawn<<std::endl;
+
     for (int i = 0; i < 64; i++) {
         //loop through the whole board and recall CheckMove with bos of opponent piece and position of Friendly king
         if (Board[i].color != OpponentColor) continue;
         if (Board[i].id == OpponentPawn) {
-            //Special condition for pawns as Checkmove() Returns Forward moves as true
+            //Special condition for pawns as CheckMove() Returns Forward moves as true
             Vector2 FrontLeft = { (float)(i % 8), (float)(i / 8) };
-            Vector2 FrontRight = { FrontLeft.x + 1 , FrontLeft.y + 1 };
-            FrontLeft.x = FrontLeft.x - 1 , FrontLeft.y = FrontLeft.y + 1;
+            Vector2 FrontRight = { FrontLeft.x + 1 , FrontLeft.y - OpponentColor};
+            FrontLeft.x = FrontLeft.x - 1 , FrontLeft.y = FrontLeft.y - OpponentColor ;
 
             if (FrontLeft == Pos || FrontRight == Pos) {
                 //std::cout<<"Piece Id: "<<Board[i].id<<std::endl;
@@ -282,7 +208,7 @@ bool MoveIntegrity::IsUnderAttack(int color, Vector2 Pos)
         }
         Vector2 CurrentTile = { (float)(i % 8), (float)(i / 8) };
         if (CheckMove(CurrentTile, Pos, false)) {
-             //std::cout<<"Piece Id: "<<Board[i].id<<std::endl;
+            //std::cout<<"Piece Id: "<<Board[i].id<<std::endl;
             return true;
         }
     }
@@ -315,7 +241,9 @@ bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
     if (pieceAt(fx + 1, fy - color) == 0) LegalMoves[2] = {-1, -1};
 
     for (int i = 0 ; i < LegalMoves.size() ; i++) {
-        if (LegalMoves[i] == SecondPos) {return true;}
+        if (LegalMoves[i] == SecondPos) {
+            return true;
+        }
     }
 
     return false;
@@ -329,6 +257,7 @@ void MoveIntegrity::InitializeBoard()
         // Black back rank (row 0)
         Board[0 * 8 + col].id    = 10 + backRank[col];
         Board[0 * 8 + col].color = Black;
+        Board[0 * 8 + col].startingTile = 0 * 8 + col;
 
         // Black pawns (row 1)
         Board[1 * 8 + col].id    = 10 + White_Pawn;
@@ -349,12 +278,13 @@ void MoveIntegrity::InitializeBoard()
         // White back rank (row 7)
         Board[7 * 8 + col].id    = backRank[col];
         Board[7 * 8 + col].color = White;
+        Board[7 * 8 + col].startingTile = 0 * 8 + col;
     }
 }
 
 bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
 {
-    //todo pins and checks , those freaking pawns
+    //todo pins and checks , those freaking pawns , castling
     bool Answer = false;
     int OriginalTile = GetTile(FirstPos);
     int DestinationTile = GetTile(SecondPos);
@@ -397,7 +327,36 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
             break;
     }
 
-    if (Answer == true && make == true){MakeMove(FirstPos , SecondPos);}
+    int Tile = GetTile(FirstPos);
+    int Color = Board[Tile].color;
+    int king = (Color == Black) ? Black_King : White_King;
+    Vector2 KingPos = {0};
+
+    for (int i = 0; i < 64; i++) {
+        if (Board[i].id == king ) {
+            KingPos = {(float)(i % 8), (float)(i / 8)};
+        }
+    }
+    if (Answer == true && make == true) {
+        MakeMove(FirstPos , SecondPos);
+
+        bool temp = IsUnderAttack(Color , KingPos);
+        std::cout<<"Is under Attack = "<<temp<<std::endl;
+        if (temp == true) {
+            std::cout<<"Unmaking move"<<std::endl;
+            MakeMove(SecondPos , FirstPos);
+            return false;
+        }
+        //else break;
+    }
+    //std::cout<<"Frame Time: "<<GetFrameTime()<<std::endl;*/
+    /*for (int i = 0 ; i < 64 ; i++) {
+        if (i % 8 == 0){std::cout<<std::endl;}
+        std::cout<<Board[i].color;
+    }*/
+    if (Answer == true && make == true) {
+        MakeMove(FirstPos , SecondPos);
+    }
     return Answer;
 }
 

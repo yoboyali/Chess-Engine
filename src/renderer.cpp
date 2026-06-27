@@ -84,7 +84,7 @@ void renderer::DrawPieces()
     }
     for (int i = 0 ; i < moves.size() ; i++) {
         int temp = moves[i];
-        Vector2 pos = {(float)(temp % 8), (float)(temp / 8)};
+        Vector2 pos = {(float)(temp / 8), (float)(temp % 8)};
         DrawCircle(pos.x * TileSize - 35 , pos.y  * TileSize - 35, 5 , RED);
     }
 }

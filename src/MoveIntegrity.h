@@ -1,12 +1,20 @@
 #ifndef MOVEINTEGRITY_H
 #define MOVEINTEGRITY_H
 #include "Includes.h"
-#include "Piece.h"
 
 class MoveIntegrity {
 
+    struct Piece {
+        int id = 0;
+        int color = 0;
+        int startingTile = 0;
+        bool Moved = false;
+    };
 
     Piece Board[64];
+    Vector2 WhiteKing;
+    Vector2 BlackKing;
+
     int GetTile(Vector2 Pos);
     void MakeMove(Vector2 FirstPos , Vector2 SecondPos);
     bool Check_Bishop(Vector2 FirstPos , Vector2 SecondPos);
@@ -18,6 +26,7 @@ class MoveIntegrity {
     bool Check_Pawn(Vector2 FirstPos, Vector2 SecondPos);
     void InitializeBoard();
 
+    bool WhiteCanCastle = true , BlackCanCastle = true;
 
     enum pieces
     {

@@ -18,10 +18,35 @@ void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
     int OriginalTile = GetTile(FirstPos);
 
     Board[Destination] = Board[OriginalTile];
+    Board[Destination].Moved = true;
 
     Board[OriginalTile].id = Empty;
     Board[OriginalTile].color = 0;
     Board[OriginalTile].startingTile = -1;
+    //Board[OriginalTile].Moved = true;
+
+}
+
+void MoveIntegrity::Castle(Vector2 KingPos, Vector2 SecondPos)
+{
+    int King = GetTile(KingPos);
+    int color = Board[King].color;
+    int RookID = (color == Black) ? Black_Rook : White_Rook;
+    int Direction = KingPos.x - SecondPos.x;
+
+    //5 - 7 = -2 -> Right < 0
+    //5 - 0 = 5 -> Left > 0
+    float x = (Direction < 0) ? 7.0 : 0.0;
+
+    Vector2 RookPos = { x , KingPos.y};
+    int RookTile = GetTile(RookPos);
+
+    if (Board[RookTile].id == RookID && Board[RookTile].Moved == false && Board[King].Moved == false) {
+        MakeMove(KingPos , SecondPos);
+        float CastleDirection = (x == 0.0) ? LeftCastle : RightCastle;
+        MakeMove(RookPos , { CastleDirection, KingPos.y});
+    }
+
 }
 
 bool MoveIntegrity::Check_Bishop(Vector2 FirstPos, Vector2 SecondPos)
@@ -149,8 +174,6 @@ bool MoveIntegrity::Check_Knight(Vector2 FirstPos, Vector2 SecondPos)
          DistanceX == 1 && DistanceY == 2) {
         return true;
     }
-
-
     return false;
 }
 
@@ -175,6 +198,9 @@ bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckA
         if (CheckAttacks == true) {return !IsUnderAttack(color, SecondPos);
         }
         return true;
+    }
+    if (DistanceX == 2) {
+        Castle(FirstPos , SecondPos);
     }
     return false;
 }
@@ -272,6 +298,7 @@ void MoveIntegrity::InitializeBoard()
         Board[0 * 8 + col].color = Black;
         Board[0 * 8 + col].startingTile = 0 * 8 + col;
 
+
         // Black pawns (row 1)
         Board[1 * 8 + col].id    = 10 + White_Pawn;
         Board[1 * 8 + col].color = Black;
@@ -304,7 +331,7 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
 
     //Check basic cases like friendly fire / invalid tile
     if (Board[OriginalTile].color == Board[DestinationTile].color && make == true ) {
-        return false;
+       return false;
     }
     if (SecondPos.x < 0 || SecondPos.x > 7
         ||SecondPos.y < 0 || SecondPos.y >7){return false;}

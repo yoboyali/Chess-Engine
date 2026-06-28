@@ -12,11 +12,10 @@ class MoveIntegrity {
     };
 
     Piece Board[64];
-    Vector2 WhiteKing;
-    Vector2 BlackKing;
 
     int GetTile(Vector2 Pos);
     void MakeMove(Vector2 FirstPos , Vector2 SecondPos);
+    void Castle(Vector2 FirstPos , Vector2 SecondPos);
     bool Check_Bishop(Vector2 FirstPos , Vector2 SecondPos);
     bool Check_Rook(Vector2 FirstPos, Vector2 SecondPos);
     bool Check_Knight(Vector2 FirstPos , Vector2 SecondPos);
@@ -27,7 +26,8 @@ class MoveIntegrity {
     bool Check_Pawn(Vector2 FirstPos, Vector2 SecondPos);
     void InitializeBoard();
 
-    bool WhiteCanCastle = true , BlackCanCastle = true;
+    const int LeftCastle  = 3;
+    const int RightCastle = 5;
 
     enum pieces
     {

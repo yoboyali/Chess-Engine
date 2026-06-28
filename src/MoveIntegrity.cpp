@@ -76,8 +76,6 @@ bool MoveIntegrity::Check_Bishop(Vector2 FirstPos, Vector2 SecondPos)
             } else stopBottomRight = true;
         }
     }
-    BishopMoves = LegalMoves;
-
     for (int tile : LegalMoves) {
         if (tile == DestinationTile) return true;
     }
@@ -88,7 +86,6 @@ bool MoveIntegrity::Check_Rook(Vector2 FirstPos, Vector2 SecondPos)
 {
     int DestinationTile = GetTile(SecondPos);
     std::vector<int> LegalMoves = {};
-
     int row = FirstPos.x;
     int column = FirstPos.y;
     bool stopUpCheck = false, stopDownCheck = false;
@@ -172,7 +169,6 @@ bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckA
     int Tile = GetTile(FirstPos);
     int color = Board[Tile].color;
 
-   // std::cout<<Tile<<std::endl;
     if (DistanceX <= 1 && DistanceY <= 1) {
         // checks whether the tile the king is trying to go to is a dangerous square
         // CheckAttacks bool so that we don't get into an infinite recursion loop when checking opponent king
@@ -188,9 +184,6 @@ bool MoveIntegrity::IsUnderAttack(int color, Vector2 Pos)
     int OpponentColor = color * -1;
     int OpponentPawn = (color == Black) ? White_Pawn : Black_Pawn;
 
-
-    std::cout<<OpponentPawn<<std::endl;
-
     for (int i = 0; i < 64; i++) {
         //loop through the whole board and recall CheckMove with bos of opponent piece and position of Friendly king
         if (Board[i].color != OpponentColor) continue;
@@ -201,18 +194,38 @@ bool MoveIntegrity::IsUnderAttack(int color, Vector2 Pos)
             FrontLeft.x = FrontLeft.x - 1 , FrontLeft.y = FrontLeft.y - OpponentColor ;
 
             if (FrontLeft == Pos || FrontRight == Pos) {
-                //std::cout<<"Piece Id: "<<Board[i].id<<std::endl;
                 return true;
             }
             continue;
         }
         Vector2 CurrentTile = { (float)(i % 8), (float)(i / 8) };
         if (CheckMove(CurrentTile, Pos, false)) {
-            //std::cout<<"Piece Id: "<<Board[i].id<<std::endl;
             return true;
         }
     }
     return false;
+}
+
+bool MoveIntegrity::IsKingInCheck(int color , Vector2 FirstPos , Vector2 SecondPos)
+{
+        Piece TempBoard[64];
+        std::copy(std::begin(Board), std::end(Board), std::begin(TempBoard));
+        int king = (color == Black) ? Black_King : White_King;
+        Vector2 KingPos = {0};
+        for (int i = 0; i < 64; i++) {
+            if (Board[i].id == king ) {
+                KingPos = {(float)(i % 8), (float)(i / 8)};
+            }
+        }
+        MakeMove(FirstPos , SecondPos);
+
+        bool temp = IsUnderAttack(color , KingPos);
+        if (temp == true) {
+            std::copy(std::begin(TempBoard), std::end(TempBoard), std::begin(Board));
+            return false;
+        }
+    return true;
+
 }
 
 bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
@@ -327,36 +340,10 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
             break;
     }
 
-    int Tile = GetTile(FirstPos);
-    int Color = Board[Tile].color;
-    int king = (Color == Black) ? Black_King : White_King;
-    Vector2 KingPos = {0};
-
-    for (int i = 0; i < 64; i++) {
-        if (Board[i].id == king ) {
-            KingPos = {(float)(i % 8), (float)(i / 8)};
-        }
-    }
     if (Answer == true && make == true) {
-        MakeMove(FirstPos , SecondPos);
-
-        bool temp = IsUnderAttack(Color , KingPos);
-        std::cout<<"Is under Attack = "<<temp<<std::endl;
-        if (temp == true) {
-            std::cout<<"Unmaking move"<<std::endl;
-            MakeMove(SecondPos , FirstPos);
-            return false;
-        }
-        //else break;
+        Answer = IsKingInCheck(Board[OriginalTile].color , FirstPos , SecondPos);
     }
-    //std::cout<<"Frame Time: "<<GetFrameTime()<<std::endl;*/
-    /*for (int i = 0 ; i < 64 ; i++) {
-        if (i % 8 == 0){std::cout<<std::endl;}
-        std::cout<<Board[i].color;
-    }*/
-    if (Answer == true && make == true) {
-        MakeMove(FirstPos , SecondPos);
-    }
+    std::cout<<"Frame Time: "<<GetFrameTime()<<std::endl;
     return Answer;
 }
 

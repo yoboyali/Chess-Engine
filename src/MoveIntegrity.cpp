@@ -120,6 +120,7 @@ bool MoveIntegrity::Check_Bishop(Vector2 FirstPos, Vector2 SecondPos)
             } else stopBottomRight = true;
         }
     }
+    sort(LegalMoves.begin() , LegalMoves.end());
     for (int tile : LegalMoves) {
         if (tile == DestinationTile) return true;
     }
@@ -177,7 +178,6 @@ bool MoveIntegrity::Check_Rook(Vector2 FirstPos, Vector2 SecondPos)
             } else stopRightCheck = true;
         }
     }
-
     for (int tile : LegalMoves) {
         if (tile == DestinationTile) return true;
     }
@@ -198,10 +198,13 @@ bool MoveIntegrity::Check_Knight(Vector2 FirstPos, Vector2 SecondPos)
 
 bool MoveIntegrity::Check_Queen(Vector2 FirstPos, Vector2 SecondPos)
 {
+
     if (Check_Rook(FirstPos , SecondPos) == true) {
         return true;
     }
+
     return Check_Bishop(FirstPos , SecondPos);
+
 }
 
 bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckAttacks)
@@ -211,6 +214,7 @@ bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckA
     int Tile = GetTile(FirstPos);
     int color = Board[Tile].color;
 
+
     if (DistanceX <= 1 && DistanceY <= 1) {
         // checks whether the tile the king is trying to go to is a dangerous square
         // CheckAttacks bool so that we don't get into an infinite recursion loop when checking opponent king
@@ -218,7 +222,7 @@ bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckA
         }
         return true;
     }
-    if (DistanceX == 2 && CheckAttacks == true) {
+   if (DistanceX == 2 && CheckAttacks == true) {
         Castle(FirstPos , SecondPos);
     }
     return false;
@@ -257,14 +261,16 @@ bool MoveIntegrity::IsKingInCheck(int color , Vector2 FirstPos , Vector2 SecondP
         Piece TempBoard[64];
         std::copy(std::begin(Board), std::end(Board), std::begin(TempBoard));
         int king = (color == Black) ? Black_King : White_King;
+
         Vector2 KingPos = {0};
+        MakeMove(FirstPos , SecondPos);
+
         for (int i = 0; i < 64; i++) {
             if (Board[i].id == king ) {
                 KingPos = {(float)(i % 8), (float)(i / 8)};
             }
         }
-        MakeMove(FirstPos , SecondPos);
-    
+
         bool temp = IsUnderAttack(color , KingPos);
         if (temp == true) {
             std::copy(std::begin(TempBoard), std::end(TempBoard), std::begin(Board));
@@ -320,20 +326,20 @@ void MoveIntegrity::InitializeBoard()
 
 
         // Black pawns (row 1)
-        Board[1 * 8 + col].id    = 10 + White_Pawn;
+     /*   Board[1 * 8 + col].id    = 10 + White_Pawn;
         Board[1 * 8 + col].color = Black;
-        Board[1 * 8 + col].startingTile = 1 * 8 + col;
+        Board[1 * 8 + col].startingTile = 1 * 8 + col;*/
 
         // Empty rows 2-5
-        for (int row = 2; row <= 5; row++) {
+        for (int row = 1; row <= 6; row++) {
             Board[row  * 8 + col].id    = Empty;
             Board[row * 8 + col].color = 0;
         }
 
         // White pawns (row 6)
-        Board[6 * 8 + col].id    = White_Pawn;
+       /* Board[6 * 8 + col].id    = White_Pawn;
         Board[6 * 8 + col].color = White;
-        Board[6 * 8 + col].startingTile = 6 * 8 + col ;
+        Board[6 * 8 + col].startingTile = 6 * 8 + col ;*/
 
         // White back rank (row 7)
         Board[7 * 8 + col].id    = backRank[col];

@@ -29,21 +29,40 @@ void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
 
 void MoveIntegrity::Castle(Vector2 KingPos, Vector2 SecondPos)
 {
+    std::vector<float>SquaresToCheckLeft  = {1.0 , 2.0, 3.0};
+    std::vector<float>SquaresToCheckRight = {5.0 , 6.0};
+
     int King = GetTile(KingPos);
     int color = Board[King].color;
     int RookID = (color == Black) ? Black_Rook : White_Rook;
-    int Direction = KingPos.x - SecondPos.x;
 
     //5 - 7 = -2 -> Right < 0
     //5 - 0 = 5 -> Left > 0
-    float x = (Direction < 0) ? 7.0 : 0.0;
+    int Direction = KingPos.x - SecondPos.x;
+    float CastleDirection = LeftCastle;
+    float x = 0.0;
+
+    std::vector<float>SquaresToCheck = SquaresToCheckLeft;
+
+    if (Direction < 0) {
+        x = 7;
+        CastleDirection = RightCastle;
+        SquaresToCheck = SquaresToCheckRight;
+
+    }
 
     Vector2 RookPos = { x , KingPos.y};
     int RookTile = GetTile(RookPos);
 
+    for (int i = 0 ; i < SquaresToCheck.size() ; i++) {
+        if (IsUnderAttack(color , {SquaresToCheck[i] , KingPos.y})) {
+            return;
+        }
+}
+
+
     if (Board[RookTile].id == RookID && Board[RookTile].Moved == false && Board[King].Moved == false) {
         MakeMove(KingPos , SecondPos);
-        float CastleDirection = (x == 0.0) ? LeftCastle : RightCastle;
         MakeMove(RookPos , { CastleDirection, KingPos.y});
     }
 
@@ -199,7 +218,7 @@ bool MoveIntegrity::Check_King(Vector2 FirstPos, Vector2 SecondPos , bool CheckA
         }
         return true;
     }
-    if (DistanceX == 2) {
+    if (DistanceX == 2 && CheckAttacks == true) {
         Castle(FirstPos , SecondPos);
     }
     return false;
@@ -209,6 +228,7 @@ bool MoveIntegrity::IsUnderAttack(int color, Vector2 Pos)
 {
     int OpponentColor = color * -1;
     int OpponentPawn = (color == Black) ? White_Pawn : Black_Pawn;
+
 
     for (int i = 0; i < 64; i++) {
         //loop through the whole board and recall CheckMove with bos of opponent piece and position of Friendly king
@@ -244,7 +264,7 @@ bool MoveIntegrity::IsKingInCheck(int color , Vector2 FirstPos , Vector2 SecondP
             }
         }
         MakeMove(FirstPos , SecondPos);
-
+    
         bool temp = IsUnderAttack(color , KingPos);
         if (temp == true) {
             std::copy(std::begin(TempBoard), std::end(TempBoard), std::begin(Board));
@@ -324,7 +344,7 @@ void MoveIntegrity::InitializeBoard()
 
 bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
 {
-    //todo pins and checks , those freaking pawns , castling
+    //todo those freaking pawns
     bool Answer = false;
     int OriginalTile = GetTile(FirstPos);
     int DestinationTile = GetTile(SecondPos);
@@ -370,7 +390,6 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
     if (Answer == true && make == true) {
         Answer = IsKingInCheck(Board[OriginalTile].color , FirstPos , SecondPos);
     }
-    std::cout<<"Frame Time: "<<GetFrameTime()<<std::endl;
     return Answer;
 }
 

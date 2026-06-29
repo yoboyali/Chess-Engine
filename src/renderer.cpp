@@ -125,7 +125,7 @@ void renderer::UpdateBoard()
         }
 
         bool MoveAccepted = Integrity.CheckMove(FirstPosition,SecondPosition , true);
-
+        std::cout<<"Frame Time: "<<GetFrameTime()<<std::endl;
         if (MoveAccepted) {
             BoardSnapshot[SecondPosition.y * 8 + SecondPosition.x] =
                 BoardSnapshot[FirstPosition.y * 8 + FirstPosition.x];

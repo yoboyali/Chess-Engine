@@ -83,6 +83,10 @@ void renderer::DrawPieces()
                        {0, 0}, 0.0f, WHITE);
     }
 
+    if (Integrity.PiecePromoted) {
+        int piece = ShowPromotionScreen();
+        Integrity.Promote(piece);
+    }
 }
 
 void renderer::DrawCursor(float x, float y)
@@ -93,12 +97,6 @@ void renderer::DrawCursor(float x, float y)
 
 void renderer::UpdateBoard()
 {
-    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-        int x = (GetMouseX() - Offset) / TileSize;
-        int y = (GetMouseY() - Offset) / TileSize;
-        int Tile = y * 8 + x;
-
-    }
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !PieceSelected) {
         int x = (GetMouseX() - Offset) / TileSize;
         int y = (GetMouseY() - Offset) / TileSize;
@@ -125,11 +123,52 @@ void renderer::UpdateBoard()
         }
 
         bool MoveAccepted = Integrity.CheckMove(FirstPosition,SecondPosition , true);
+
         std::cout<<"Frame Time: "<<GetFrameTime()<<std::endl;
         if (MoveAccepted) {
             BoardSnapshot[SecondPosition.y * 8 + SecondPosition.x] =
                 BoardSnapshot[FirstPosition.y * 8 + FirstPosition.x];
             BoardSnapshot[FirstPosition.y * 8 + FirstPosition.x] = Empty;
+        }
+
+    }
+}
+
+int renderer::ShowPromotionScreen() {
+    ShowCursor();
+    RenderTexture target = LoadRenderTexture(320, 80);
+
+    BeginTextureMode(target);
+        ClearBackground(RAYWHITE);
+        DrawTexture(wPiecesTex , -80 , 0 , WHITE);
+
+    EndTextureMode();
+    int selectedIndex = -1;
+
+    while (1) {
+        BeginDrawing();
+            ClearBackground(DARKGRAY);
+
+            DrawText("Click on a piece to select it:", 50, 20, 20, WHITE);
+
+            DrawTextureRec(target.texture,
+                          (Rectangle){0, 0, 320, -80}, // Flip Y
+                          (Vector2){195, 60},
+                          WHITE);
+
+            DrawRectangleLines(195, 60, 320, 80, YELLOW);
+        EndDrawing();
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            int x = GetMouseX();
+            int y = GetMouseY();
+
+            if (x >= 195 && x < 195 + 320 && y >= 60 && y < 60 + 80) {
+                selectedIndex = (x - 195) / TileSize;
+                UnloadRenderTexture(target);
+                return selectedIndex + 1;
+
+            }
         }
     }
 }

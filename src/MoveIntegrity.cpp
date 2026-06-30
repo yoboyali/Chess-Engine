@@ -23,9 +23,9 @@ void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
     Board[OriginalTile].id = Empty;
     Board[OriginalTile].color = 0;
     Board[OriginalTile].startingTile = -1;
-    //Board[OriginalTile].Moved = true;
 
 }
+
 
 void MoveIntegrity::Castle(Vector2 KingPos, Vector2 SecondPos)
 {
@@ -289,6 +289,8 @@ bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
     int fy = (int)FirstPos.y;
     int color = Board[OriginalTile].color;
 
+    int PromotionTile = (color == White) ? 0 : 7;
+
 
     auto pieceAt = [&](int x, int y) {
         return Board[y * 8 + x].id;
@@ -307,6 +309,11 @@ bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
 
     for (int i = 0 ; i < LegalMoves.size() ; i++) {
         if (LegalMoves[i] == SecondPos) {
+            if (SecondPos.y == PromotionTile) {
+                PromotedPawns.push_back({(float)OriginalTile ,(float) DestinationTile});
+                PiecePromoted = true;
+                return false;
+            }
             return true;
         }
     }
@@ -326,20 +333,20 @@ void MoveIntegrity::InitializeBoard()
 
 
         // Black pawns (row 1)
-     /*   Board[1 * 8 + col].id    = 10 + White_Pawn;
+        Board[1 * 8 + col].id    = 10 + White_Pawn;
         Board[1 * 8 + col].color = Black;
-        Board[1 * 8 + col].startingTile = 1 * 8 + col;*/
+        Board[1 * 8 + col].startingTile = 1 * 8 + col;
 
         // Empty rows 2-5
-        for (int row = 1; row <= 6; row++) {
+        for (int row = 2; row <= 5; row++) {
             Board[row  * 8 + col].id    = Empty;
             Board[row * 8 + col].color = 0;
         }
 
         // White pawns (row 6)
-       /* Board[6 * 8 + col].id    = White_Pawn;
+        Board[6 * 8 + col].id    = White_Pawn;
         Board[6 * 8 + col].color = White;
-        Board[6 * 8 + col].startingTile = 6 * 8 + col ;*/
+        Board[6 * 8 + col].startingTile = 6 * 8 + col ;
 
         // White back rank (row 7)
         Board[7 * 8 + col].id    = backRank[col];
@@ -348,7 +355,23 @@ void MoveIntegrity::InitializeBoard()
     }
 }
 
-bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
+void MoveIntegrity::Promote(int Piece)
+{
+    int OriginalTile = PromotedPawns[0].x;
+    int DestinationTile = PromotedPawns[0].y;
+    Piece = (Board[OriginalTile].color == White) ? Piece : Piece + 10;
+
+    Board[OriginalTile].id = Piece;
+
+    Vector2 FirstPos = {(float)(OriginalTile % 8), (float)(OriginalTile / 8)};
+    Vector2 SecondPos = {(float)(DestinationTile % 8), (float)(DestinationTile / 8)};
+    MakeMove(FirstPos , SecondPos);
+
+    PromotedPawns.pop_back();
+    PiecePromoted = false;
+}
+
+int MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
 {
     //todo those freaking pawns
     bool Answer = false;
@@ -361,6 +384,7 @@ bool MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
     }
     if (SecondPos.x < 0 || SecondPos.x > 7
         ||SecondPos.y < 0 || SecondPos.y >7){return false;}
+
 
 
     switch (Board[OriginalTile].id) {

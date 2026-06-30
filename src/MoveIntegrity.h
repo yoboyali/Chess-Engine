@@ -11,24 +11,6 @@ class MoveIntegrity {
         bool Moved = false;
     };
 
-    Piece Board[64];
-
-    int GetTile(Vector2 Pos);
-    void MakeMove(Vector2 FirstPos , Vector2 SecondPos);
-    void Castle(Vector2 FirstPos , Vector2 SecondPos);
-    bool Check_Bishop(Vector2 FirstPos , Vector2 SecondPos);
-    bool Check_Rook(Vector2 FirstPos, Vector2 SecondPos);
-    bool Check_Knight(Vector2 FirstPos , Vector2 SecondPos);
-    bool Check_Queen(Vector2 FirstPos , Vector2 SecondPos);
-    bool Check_King(Vector2 FirstPos , Vector2 SecondPos , bool CheckAttacks);
-    bool IsUnderAttack(int color , Vector2 Pos);
-    bool IsKingInCheck(int color , Vector2 FirstPos , Vector2 SecondPos);
-    bool Check_Pawn(Vector2 FirstPos, Vector2 SecondPos);
-    void InitializeBoard();
-
-    const int LeftCastle  = 3;
-    const int RightCastle = 5;
-
     enum pieces
     {
         White_Horse  = 1,
@@ -50,10 +32,34 @@ class MoveIntegrity {
 
     };
 
-public:
-    bool CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make);
-    std::array<int, 64> GetBoard();
+    Piece Board[64];
 
+    int GetTile(Vector2 Pos);
+    void MakeMove(Vector2 FirstPos , Vector2 SecondPos);
+    void Castle(Vector2 FirstPos , Vector2 SecondPos);
+    bool Check_Bishop(Vector2 FirstPos , Vector2 SecondPos);
+    bool Check_Rook(Vector2 FirstPos, Vector2 SecondPos);
+    bool Check_Knight(Vector2 FirstPos , Vector2 SecondPos);
+    bool Check_Queen(Vector2 FirstPos , Vector2 SecondPos);
+    bool Check_King(Vector2 FirstPos , Vector2 SecondPos , bool CheckAttacks);
+    bool IsUnderAttack(int color , Vector2 Pos);
+    bool IsKingInCheck(int color , Vector2 FirstPos , Vector2 SecondPos);
+    bool Check_Pawn(Vector2 FirstPos, Vector2 SecondPos);
+    void InitializeBoard();
+
+    const int LeftCastle  = 3;
+    const int RightCastle = 5;
+
+    std::vector<Vector2> PromotedPawns;
+
+
+
+public:
+
+    bool PiecePromoted = false;
+    void Promote(int Piece);
+    int CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make);
+    std::array<int, 64> GetBoard();
     MoveIntegrity();
     ~MoveIntegrity();
 };

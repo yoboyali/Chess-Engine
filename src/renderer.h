@@ -12,6 +12,7 @@ class renderer {
     Texture bPiecesTex;
     Texture wPiecesTex;
     Texture CursorTex;
+    RenderTexture2D target;
 
     std::array<int, 64> BoardSnapshot;
 
@@ -25,6 +26,7 @@ class renderer {
     void DrawPieces();
     void DrawCursor(float x , float y);
     void UpdateBoard();
+    int ShowPromotionScreen();
 
 public:
     renderer();

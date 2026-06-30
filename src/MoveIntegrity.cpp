@@ -16,6 +16,8 @@ void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
 {
     int Destination = GetTile(SecondPos);
     int OriginalTile = GetTile(FirstPos);
+    int color = Board[OriginalTile].color;
+
 
     Board[Destination] = Board[OriginalTile];
     Board[Destination].Moved = true;
@@ -23,6 +25,12 @@ void MoveIntegrity::MakeMove(Vector2 FirstPos, Vector2 SecondPos)
     Board[OriginalTile].id = Empty;
     Board[OriginalTile].color = 0;
     Board[OriginalTile].startingTile = -1;
+
+    if (EnPassant) {
+        EnPassant = false;
+        int temp = GetTile({SecondPos.x , SecondPos.y + (1 * color)});
+        Board[temp].id = Empty;
+    }
 
 }
 
@@ -258,8 +266,7 @@ bool MoveIntegrity::IsUnderAttack(int color, Vector2 Pos)
 
 bool MoveIntegrity::IsKingInCheck(int color , Vector2 FirstPos , Vector2 SecondPos)
 {
-        Piece TempBoard[64];
-        std::copy(std::begin(Board), std::end(Board), std::begin(TempBoard));
+        std::copy(std::begin(Board), std::end(Board), std::begin(PrevBoard));
         int king = (color == Black) ? Black_King : White_King;
 
         Vector2 KingPos = {0};
@@ -273,7 +280,7 @@ bool MoveIntegrity::IsKingInCheck(int color , Vector2 FirstPos , Vector2 SecondP
 
         bool temp = IsUnderAttack(color , KingPos);
         if (temp == true) {
-            std::copy(std::begin(TempBoard), std::end(TempBoard), std::begin(Board));
+            std::copy(std::begin(PrevBoard), std::end(PrevBoard), std::begin(Board));
             return false;
         }
     return true;
@@ -282,7 +289,6 @@ bool MoveIntegrity::IsKingInCheck(int color , Vector2 FirstPos , Vector2 SecondP
 
 bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
 {
-    // Todo enn passant + promotion
     int OriginalTile = GetTile(FirstPos);
     int DestinationTile = GetTile(SecondPos);
     int fx = (int)FirstPos.x;
@@ -296,7 +302,7 @@ bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
         return Board[y * 8 + x].id;
     };
 
-    std::array<Vector2 , 4> LegalMoves;
+    std::array<Vector2 , 5> LegalMoves;
     LegalMoves[0] = {FirstPos.x , FirstPos.y - 1 * color};
     LegalMoves[1] = {FirstPos.x -1 , FirstPos.y - 1 * color};
     LegalMoves[2] = {FirstPos.x +1 , FirstPos.y - 1 * color};
@@ -306,6 +312,14 @@ bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
     if (pieceAt(fx, fy - color) != 0) {LegalMoves[0] = {-1, -1};LegalMoves[3] = {-1,-1};}
     if (pieceAt(fx - 1, fy - color) == 0) LegalMoves[1] = {-1, -1};
     if (pieceAt(fx + 1, fy - color) == 0) LegalMoves[2] = {-1, -1};
+    if (FirstPos.y == 3 || FirstPos.y == 4) {
+        int x = canEnPassant(FirstPos);
+        if (x > -1) {
+            Vector2 EnPassantPos = {(float)(x % 8), (float)(x / 8)};
+            LegalMoves[4] = EnPassantPos;
+        }
+
+    }
 
     for (int i = 0 ; i < LegalMoves.size() ; i++) {
         if (LegalMoves[i] == SecondPos) {
@@ -319,6 +333,30 @@ bool MoveIntegrity::Check_Pawn(Vector2 FirstPos, Vector2 SecondPos)
     }
 
     return false;
+}
+
+int MoveIntegrity::canEnPassant(Vector2 Pos)
+{
+    int color = Board[GetTile(Pos)].color;
+    int OpponentPawn = (color == Black) ? White_Pawn : Black_Pawn;
+                                            //Front Left
+    Vector2 SquaresToCheck[2] = {{Pos.x -1 , Pos.y - (1 * color)} ,
+                                            //Front Right
+                                {Pos.x + 1 , Pos.y - (1 * color)}};
+
+        for (int i = 0 ; i < 2 ; i++) {
+            //Subtract 2 from y once for left and right to get the starting pos on both sides
+            int OpponentStartingTile = GetTile({SquaresToCheck[i].x , Pos.y - (2 * color)});
+            //Calc tile to check the left and right
+            int Tile = GetTile({SquaresToCheck[i].x ,Pos.y });
+            if (PrevBoard[OpponentStartingTile].id == OpponentPawn && Board[Tile].id == OpponentPawn ) {
+                EnPassant = true;
+                return GetTile(SquaresToCheck[i]);
+            }
+        }
+
+
+    return -1;
 }
 
 void MoveIntegrity::InitializeBoard()
@@ -373,7 +411,7 @@ void MoveIntegrity::Promote(int Piece)
 
 int MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
 {
-    //todo those freaking pawns
+    //todo Proper turns , optimize look ups , Generate All Legal moves , Winning/StaleMate Conditions
     bool Answer = false;
     int OriginalTile = GetTile(FirstPos);
     int DestinationTile = GetTile(SecondPos);
@@ -384,8 +422,6 @@ int MoveIntegrity::CheckMove(Vector2 FirstPos, Vector2 SecondPos , bool make )
     }
     if (SecondPos.x < 0 || SecondPos.x > 7
         ||SecondPos.y < 0 || SecondPos.y >7){return false;}
-
-
 
     switch (Board[OriginalTile].id) {
 
